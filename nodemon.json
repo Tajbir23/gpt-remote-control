@@ -1,0 +1,18 @@
+{
+  "ignore": [
+    "browser-profiles/**",
+    "node_modules/**",
+    "*.log",
+    "*.txt"
+  ],
+  "watch": [
+    "*.js",
+    "handler/**/*.js",
+    "socket/**/*.js",
+    "model/**/*.js",
+    "db/**/*.js"
+  ],
+  "ext": "js,json",
+  "verbose": false
+}
+
