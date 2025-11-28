@@ -2,6 +2,7 @@
  * Browser launch functionality
  */
 
+const os = require('os')
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 const path = require("path");
@@ -13,6 +14,8 @@ const { closeBrowser } = require('./browserCloser');
 
 
 puppeteer.use(StealthPlugin());
+
+const hostname = os.hostname()
 /**
  * Launch browser with specific profile
  */
@@ -33,6 +36,7 @@ const launchBrowser = async (gptAccount, location) => {
         console.log(`Launching browser ${gptAccount}...`);
 
         let proxyHost, proxyPort
+        console.log(process.env.LOCATION, location)
         if(process.env.LOCATION !== location){
             proxyHost = '127.0.0.1'
             proxyPort = 60010
@@ -70,12 +74,12 @@ const launchBrowser = async (gptAccount, location) => {
         browserStore.add(gptAccount, { browser, page });
         console.log(`Browser ${gptAccount} launched successfully`);
 
-        await gptAccountModel.updateOne({gptAccount},{$addToSet: {openOn: process.env.RDP_ID}})
+        await gptAccountModel.updateOne({gptAccount},{$addToSet: {openOn: hostname}})
 
     } catch (error) {
         console.error(`Error launching browser ${gptAccount}:`, error.message);
         await closeBrowser(gptAccount)
-        await gptAccountModel.updateOne({gptAccount},{$pull: {openOn: process.env.RDP_ID}})
+        await gptAccountModel.updateOne({gptAccount},{$pull: {openOn: hostname}})
         throw error;
     }
 };

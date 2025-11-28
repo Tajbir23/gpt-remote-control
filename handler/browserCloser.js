@@ -6,7 +6,9 @@ const browserStore = require("./browserStore");
 const gptAccountModel = require("../model/gptAccountSchema");
 const path = require("path");
 const fs = require("fs");
+const os = require('os')
 
+const hostname = os.hostname()
 /**
  * Delete profile folder recursively
  */
@@ -38,7 +40,7 @@ const closeBrowser = async (gptAccount) => {
         // Update database
         await gptAccountModel.updateOne(
             {gptAccount}, 
-            {$pull: {openOn: process.env.RDP_ID}}
+            {$pull: {openOn: hostname}}
         );
         
         // Delete profile folder

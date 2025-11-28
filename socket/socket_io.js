@@ -35,12 +35,14 @@ hostConnection.on("error", (error) => {
 
 hostConnection.on("rcGptAccount", async(account) => {
     console.log('Gpt account:', account)
+    console.log('Hostname:', hostname)
+    console.log('Rdp id:', account.rdpId)
     if(hostname === account.rdpId){
         console.log('Rdp id is correct')
         if(account.action === "open"){
             console.log("opening browser", account.gptAccount)
             await launchBrowser(account.gptAccount, account.location)
-        }else if(hostname === "close"){
+        }else if(account.action === "close"){
             console.log("closing browser", account.gptAccount)
             await closeBrowser(account.gptAccount)
         }
