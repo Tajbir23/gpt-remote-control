@@ -1,7 +1,11 @@
 require('dotenv').config()
 const { io } = require("socket.io-client");
+const os = require('os')
 const { launchBrowser } = require('../handler/browserLauncher');
 const { closeBrowser } = require('../handler/browserCloser');
+
+const hostname = os.hostname()
+
 
 const hostConnection = io(process.env.BASE_URL, {
     reconnection: true,
@@ -31,12 +35,12 @@ hostConnection.on("error", (error) => {
 
 hostConnection.on("rcGptAccount", async(account) => {
     console.log('Gpt account:', account)
-    if(process.env.RDP_ID === account.rdpId){
+    if(hostname === account.rdpId){
         console.log('Rdp id is correct')
         if(account.action === "open"){
             console.log("opening browser", account.gptAccount)
             await launchBrowser(account.gptAccount)
-        }else if(account.action === "close"){
+        }else if(hostname === "close"){
             console.log("closing browser", account.gptAccount)
             await closeBrowser(account.gptAccount)
         }
