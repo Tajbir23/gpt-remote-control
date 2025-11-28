@@ -22,6 +22,7 @@ const openChatGpt = async (gptAccount, page) => {
         console.log(`Failed to set ${failedSet.length} cookies for account ${gptAccount}:`, failedSet);
     }
 
+    
     await page.goto("https://chatgpt.com")
 }
 

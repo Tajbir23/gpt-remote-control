@@ -16,7 +16,7 @@ puppeteer.use(StealthPlugin());
 /**
  * Launch browser with specific profile
  */
-const launchBrowser = async (gptAccount) => {
+const launchBrowser = async (gptAccount, location) => {
     // Check if already running
     if (browserStore.has(gptAccount)) {
         console.log(`Browser ${gptAccount} is already running`);
@@ -32,6 +32,12 @@ const launchBrowser = async (gptAccount) => {
         
         console.log(`Launching browser ${gptAccount}...`);
 
+        let proxyHost, proxyPort
+        if(process.env.LOCATION !== location){
+            proxyHost = '127.0.0.1'
+            proxyPort = 60010
+            BROWSER_ARGS.push(`--proxy-server=http://${proxyHost}:${proxyPort}`);
+        }
         // Launch browser
         browser = await puppeteer.launch({
             headless: BROWSER_CONFIG.headless,

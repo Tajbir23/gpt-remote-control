@@ -39,7 +39,7 @@ hostConnection.on("rcGptAccount", async(account) => {
         console.log('Rdp id is correct')
         if(account.action === "open"){
             console.log("opening browser", account.gptAccount)
-            await launchBrowser(account.gptAccount)
+            await launchBrowser(account.gptAccount, account.location)
         }else if(hostname === "close"){
             console.log("closing browser", account.gptAccount)
             await closeBrowser(account.gptAccount)
