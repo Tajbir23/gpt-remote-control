@@ -11,6 +11,8 @@ const browserStore = require("./browserStore");
 const gptAccountModel = require("../model/gptAccountSchema");
 const openChatGpt = require("./handleTeam/openChatGpt");
 const { closeBrowser } = require('./browserCloser');
+const extractCookiesFromPage = require('./handleCookies/extractCookiesFromPage');
+const updateCookies = require('./handleCookies/updateCookies');
 
 
 puppeteer.use(StealthPlugin());
@@ -59,6 +61,10 @@ const launchBrowser = async (gptAccount, location) => {
         
         // Monitor browser close/disconnect
         browser.on('disconnected', async () => {
+            const { success, formattedCookies } = await extractCookiesFromPage(page, gptAccount)
+            if(success){
+                await updateCookies(formattedCookies, gptAccount)
+            }
             console.log(`⚠️ Browser ${gptAccount} was closed manually or crashed`);
             
             
