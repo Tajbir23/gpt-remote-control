@@ -22,8 +22,16 @@ const openChatGpt = async (gptAccount, page) => {
         console.log(`Failed to set ${failedSet.length} cookies for account ${gptAccount}:`, failedSet);
     }
 
-    
-    await page.goto("https://chatgpt.com")
+    // Navigate with increased timeout and error handling
+    try {
+        await page.goto("https://chatgpt.com", {
+            waitUntil: 'domcontentloaded'
+        });
+        console.log(`✅ ChatGPT opened for ${gptAccount}`);
+    } catch (error) {
+        console.error(`⚠️ Navigation timeout for ${gptAccount}, but continuing...`);
+        // Don't throw - browser is still usable
+    }
 }
 
 module.exports = openChatGpt

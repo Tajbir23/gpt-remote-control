@@ -56,36 +56,59 @@ const launchBrowser = async (gptAccount, location) => {
 
         // Get or create page
         page = await browser.newPage();
-
-        await openChatGpt(gptAccount, page)
+        
+        // Store browser instance BEFORE opening ChatGPT
+        // This ensures browser is in store even if navigation fails
+        browserStore.add(gptAccount, { browser, page });
         
         // Monitor browser close/disconnect
         browser.on('disconnected', async () => {
-            const { success, formattedCookies } = await extractCookiesFromPage(page, gptAccount)
-            if(success){
-                await updateCookies(formattedCookies, gptAccount)
-            }
             console.log(`⚠️ Browser ${gptAccount} was closed manually or crashed`);
             
-            
-            // Close browser
+            // Try to save cookies
             try {
-                await closeBrowser(gptAccount)
+                const { success, formattedCookies } = await extractCookiesFromPage(page, gptAccount);
+                if(success){
+                    await updateCookies(formattedCookies, gptAccount);
+                }
             } catch (error) {
-                console.error(`❌ Error closing browser ${gptAccount}:`, error.message);
+                console.log(`⚠️ Could not save cookies: ${error.message}`);
+            }
+            
+            // Cleanup
+            try {
+                browserStore.remove(gptAccount);
+                await gptAccountModel.updateOne(
+                    {gptAccount},
+                    {$pull: {openOn: hostname}}
+                );
+                console.log(`✅ Cleanup completed for ${gptAccount}`);
+            } catch (error) {
+                console.error(`❌ Error during cleanup: ${error.message}`);
             }
         });
-        
-        // Store browser instance
-        browserStore.add(gptAccount, { browser, page });
-        console.log(`Browser ${gptAccount} launched successfully`);
 
-        await gptAccountModel.updateOne({gptAccount},{$addToSet: {openOn: hostname}})
+        // Open ChatGPT (after browser is stored)
+        await openChatGpt(gptAccount, page);
+        
+        console.log(`Browser ${gptAccount} launched successfully`);
+        await gptAccountModel.updateOne({gptAccount},{$addToSet: {openOn: hostname}});
 
     } catch (error) {
         console.error(`Error launching browser ${gptAccount}:`, error.message);
-        await closeBrowser(gptAccount)
-        await gptAccountModel.updateOne({gptAccount},{$pull: {openOn: hostname}})
+        
+        // Cleanup on error
+        if (browser) {
+            try {
+                await browser.close();
+            } catch (e) {
+                console.error(`Error closing browser: ${e.message}`);
+            }
+        }
+        
+        browserStore.remove(gptAccount);
+        await gptAccountModel.updateOne({gptAccount},{$pull: {openOn: hostname}});
+        
         throw error;
     }
 };

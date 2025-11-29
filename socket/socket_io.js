@@ -38,15 +38,29 @@ hostConnection.on("rcGptAccount", async(account) => {
     console.log('Gpt account:', account)
     console.log('Hostname:', hostname)
     console.log('Rdp id:', account.rdpId)
+    
     if(hostname === account.rdpId){
         console.log('Rdp id is correct')
-        if(account.action === "open"){
-            console.log("opening browser", account.gptAccount)
-            await launchBrowser(account.gptAccount, account.location)
-        }else if(account.action === "close"){
-            console.log("closing browser", account.gptAccount)
-            await closeBrowser(account.gptAccount)
+        
+        try {
+            if(account.action === "open"){
+                console.log("opening browser", account.gptAccount)
+                await launchBrowser(account.gptAccount, account.location)
+                console.log(`✅ Browser ${account.gptAccount} opened successfully`)
+            }
+            else if(account.action === "close"){
+                console.log("closing browser", account.gptAccount)
+                const result = await closeBrowser(account.gptAccount)
+                if(result){
+                    console.log(`✅ Browser ${account.gptAccount} closed successfully`)
+                }else{
+                    console.log(`⚠️ Browser ${account.gptAccount} was not running`)
+                }
+            }
+        } catch (error) {
+            console.error(`❌ Error handling ${account.action} for ${account.gptAccount}:`, error.message)
         }
+        
     }else{
         console.log('Rdp id is incorrect')
     }
