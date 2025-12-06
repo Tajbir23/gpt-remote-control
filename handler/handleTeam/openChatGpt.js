@@ -24,7 +24,7 @@ const openChatGpt = async (gptAccount, page) => {
 
     // Navigate with increased timeout and error handling
     try {
-        await page.goto("https://chatgpt.com", {
+        await page.goto("https://chatgpt.com/admin/members?tab=invites", {
             waitUntil: 'domcontentloaded'
         });
         console.log(`✅ ChatGPT opened for ${gptAccount}`);
