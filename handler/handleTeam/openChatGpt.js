@@ -1,37 +1,42 @@
-const getCookies = require("./getCookies")
-const perseCookies = require("./normalizeCookies")
+const getCookies = require("./getCookies");
+const perseCookies = require("./normalizeCookies");
 
 const openChatGpt = async (gptAccount, page) => {
+  const cookies = await getCookies(gptAccount);
 
-    const cookies = await getCookies(gptAccount)
+  const normalizeCookies = await perseCookies(cookies);
 
-    const normalizeCookies = await perseCookies(cookies)
-
-    const failedSet = [];
-    for (const cookie of normalizeCookies) {
-        try {
-            await page.setCookie(cookie);
-        } catch (error) {
-            console.log(`Error setting cookie ${cookie.name} for account ${gptAccount}:`, error.message);
-            failedSet.push({ name: cookie.name, error: error.message });
-            // Continue with other cookies even if one fails
-        }
-    }
-
-    if (failedSet.length > 0) {
-        console.log(`Failed to set ${failedSet.length} cookies for account ${gptAccount}:`, failedSet);
-    }
-
-    // Navigate with increased timeout and error handling
+  const failedSet = [];
+  for (const cookie of normalizeCookies) {
     try {
-        await page.goto("https://chatgpt.com/admin/members?tab=members", {
-            waitUntil: 'domcontentloaded'
-        });
-        console.log(`✅ ChatGPT opened for ${gptAccount}`);
+      await page.setCookie(cookie);
     } catch (error) {
-        console.error(`⚠️ Navigation timeout for ${gptAccount}, but continuing...`);
-        // Don't throw - browser is still usable
+      console.log(
+        `Error setting cookie ${cookie.name} for account ${gptAccount}:`,
+        error.message
+      );
+      failedSet.push({ name: cookie.name, error: error.message });
+      // Continue with other cookies even if one fails
     }
-}
+  }
 
-module.exports = openChatGpt
+  if (failedSet.length > 0) {
+    console.log(
+      `Failed to set ${failedSet.length} cookies for account ${gptAccount}:`,
+      failedSet
+    );
+  }
+
+  // Navigate with increased timeout and error handling
+  try {
+    await page.goto("https://chatgpt.com/admin/members", {
+      waitUntil: "domcontentloaded",
+    });
+    console.log(`✅ ChatGPT opened for ${gptAccount}`);
+  } catch (error) {
+    console.error(`⚠️ Navigation timeout for ${gptAccount}, but continuing...`);
+    // Don't throw - browser is still usable
+  }
+};
+
+module.exports = openChatGpt;
